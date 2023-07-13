@@ -1,4 +1,4 @@
-package com.example.yolov8_distance
+package com.example.yolo_distance
 
 import android.content.Context
 import android.graphics.Canvas
@@ -7,16 +7,15 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import com.example.yolov8_distance.MainActivity.Companion.info
-import com.example.yolov8_distance.MainActivity.Companion.isDistance
-import com.example.yolov8_distance.MainActivity.Companion.realHeight
+import com.example.yolo_distance.MainActivity.Companion.info
+import com.example.yolo_distance.MainActivity.Companion.isDistance
+import com.example.yolo_distance.MainActivity.Companion.realHeight
 import kotlin.math.round
 
 class RectView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
     private var results: ArrayList<Result>? = null
     private lateinit var classes: Array<String>
-    private var count = 1
     private val detectObject = "person"
 
 
@@ -118,7 +117,6 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
 
     //paint 지정
     private fun findPaint(section: Int): Paint {
-        this.count++
         val paint = Paint()
         paint.style = Paint.Style.STROKE    // 빈 사각형 그림
         paint.strokeWidth = 10.0f           // 굵기 10

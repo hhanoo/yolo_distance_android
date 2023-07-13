@@ -13,7 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/src/main/assets/yolov5n6u.onnx
+/app/src/main/assets/coco128.txt
 /app/src/main/assets/yolov8n.onnx
-/app/src/main/assets/yolov8n.txt
 /app/src/main/assets/yolov8s.onnx
+/app/src/main/assets/yolov5nu.onnx

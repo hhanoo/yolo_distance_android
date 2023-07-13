@@ -19,7 +19,7 @@
 
     </androidx.camera.view.PreviewView>
 
-    <com.example.yolov8_distance.RectView
+    <com.example.yolo_distance.RectView
         android:id="@+id/rectView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -30,7 +30,7 @@
         app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintVertical_weight="0.9" />
 
-    <com.example.yolov8_distance.DividedAreaView
+    <com.example.yolo_distance.DividedAreaView
         android:id="@+id/divideAreaView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -74,7 +74,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="160"
+            android:importantForAutofill="no"
             android:inputType="number"
+            android:maxLength="3"
             android:minWidth="100dp"
             android:textAlignment="center"
             android:textColor="@color/black"

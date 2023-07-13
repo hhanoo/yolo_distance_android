@@ -1,4 +1,4 @@
-package com.example.yolov8_distance
+package com.example.yolo_distance
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,10 +23,10 @@ class DataProcess(val context: Context) {
         const val INPUT_SIZE = 640
         const val PIXEL_SIZE = 3
 
-        //const val FILE_NAME = "yolov5n6u.onnx"
-        //const val FILE_NAME = "yolov8n.onnx"
-        const val FILE_NAME = "yolov8s.onnx"
-        const val LABEL_NAME = "yolov8n.txt"
+        const val LABEL_NAME = "coco128.txt"
+//        const val FILE_NAME = "yolov5nu.onnx"
+        const val FILE_NAME = "yolov8n.onnx"
+//        const val FILE_NAME = "yolov8s.onnx"
     }
 
     // ImageProxy를 bitmap으로 만들고, 640x640 bitmap으로 변환
@@ -125,8 +125,10 @@ class DataProcess(val context: Context) {
             var detectionClass: Int = -1
             var maxScore = 0f
             val classArray = FloatArray(classes.size)
+
             // label 만 따로 빼서 1차원 배열을 만든다.(0~3은 좌표 값)
             System.arraycopy(output[i], 4, classArray, 0, classes.size)
+
             // label 중에서 가장 큰 값을 선정
             for (j in classes.indices) {
                 if (classArray[j] > maxScore) {
@@ -135,13 +137,13 @@ class DataProcess(val context: Context) {
                 }
             }
 
-            //만약 80개의 coco dataset 중 가장 큰 score 값이 Threshold 넘는다면 해당 값을 저장
+            // 만약 80개의 coco dataset 중 가장 큰 score 값이 Threshold 넘는다면 해당 값을 저장
             if (maxScore > confidenceThreshold) {
                 val xPos = output[i][0]
                 val yPos = output[i][1]
                 val width = output[i][2]
                 val height = output[i][3]
-                //사각형은 화면 밖으로 나갈 수 없으니 화면을 넘기면 최대 화면 값을 가지게 한다.
+                // 사각형은 화면 밖으로 나갈 수 없으니 화면을 넘기면 최대 화면 값을 가지게 한다.
                 val rectF = RectF(
                     max(0f, xPos - width / 2f),
                     max(0f, yPos - height / 2f),

@@ -1,4 +1,4 @@
-package com.example.yolov8_distance
+package com.example.yolo_distance
 
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.hardware.Camera
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
@@ -20,7 +19,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
-import com.example.yolov8_distance.databinding.ActivityMainBinding
+import com.example.yolo_distance.databinding.ActivityMainBinding
 import java.util.Collections
 import java.util.concurrent.Executors
 

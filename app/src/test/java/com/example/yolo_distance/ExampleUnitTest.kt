@@ -1,4 +1,4 @@
-package com.example.yolov8_distance
+package com.example.yolo_distance
 
 import org.junit.Test
 

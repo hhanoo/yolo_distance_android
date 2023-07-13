@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.YOLOv8_distance" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.YOLO_distance" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <item name="android:windowFullscreen">true</item>
     </style>
