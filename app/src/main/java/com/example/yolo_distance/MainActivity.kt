@@ -22,6 +22,7 @@ import androidx.core.app.ActivityCompat
 import com.example.yolo_distance.databinding.ActivityMainBinding
 import java.util.Collections
 import java.util.concurrent.Executors
+import kotlin.math.roundToLong
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -168,6 +169,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun imageProcess(imageProxy: ImageProxy) {
+        // 시작 시간 기록
+        val startTime = System.currentTimeMillis()
+
         val bitmap = dataProcess.imageToBitmap(imageProxy)
         val floatBuffer = dataProcess.bitmapToFloatBuffer(bitmap)
         val inputName = session.inputNames.iterator().next() // session 이름
@@ -190,5 +194,19 @@ class MainActivity : AppCompatActivity() {
         //화면 표출
         rectView.transformRect(results) // results를 사용하여 rectView에 객체 감지 결과를 전달하여 사각형으로 표시할 위치와 정보를 변환
         rectView.invalidate()   // rectView를 다시 그리도록 호출해서 update
+
+        // 종료 시간 기록
+        val endTime = System.currentTimeMillis()
+
+        // 경과 시간 계산
+        val elapsedTime = endTime - startTime
+
+        // FPS 계산
+        val fps = (1000.0 / elapsedTime * 10).roundToLong() / 10f
+
+        // FPS를 메인 스레드에서 TextView에 업데이트
+        runOnUiThread {
+            binding.fpsTv.text = "FPS: ${fps}"
+        }
     }
 }
