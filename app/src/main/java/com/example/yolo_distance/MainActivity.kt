@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         val displayMetrics = resources.displayMetrics
         val dpi = displayMetrics.densityDpi // DPI 값
         var pixelHeight = sensorHeight / dpi // 세로 크기를 인치 단위로 변환
-        pixelHeight *= 0.0254 // 세로 크기를 인치 -> 센치 단위로 변환
+        pixelHeight *= 2.54 // 세로 크기를 인치 -> 센치 단위로 변환
         camera.release()
 
         return arrayOf(focalLength, pixelHeight)
