@@ -3,6 +3,7 @@ package com.example.yolo_distance
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import java.io.BufferedReader
 import java.io.File
@@ -14,7 +15,7 @@ import java.util.PriorityQueue
 import kotlin.math.max
 import kotlin.math.min
 
-class DataProcess(val context: Context) {
+class DetectProcess(val context: Context) {
 
     lateinit var classes: Array<String>
 
@@ -23,10 +24,8 @@ class DataProcess(val context: Context) {
         const val INPUT_SIZE = 640
         const val PIXEL_SIZE = 3
 
-        const val LABEL_NAME = "coco128.txt"
-//        const val FILE_NAME = "yolov5nu.onnx"
-        const val FILE_NAME = "yolov8n.onnx"
-//        const val FILE_NAME = "yolov8s.onnx"
+        const val LABEL_NAME = "face.txt"
+        const val FILE_NAME = "yolov8n-face.onnx"
     }
 
     // ImageProxy를 bitmap으로 만들고, 640x640 bitmap으로 변환

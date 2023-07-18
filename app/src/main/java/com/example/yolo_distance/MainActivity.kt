@@ -3,12 +3,15 @@ package com.example.yolo_distance
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import android.content.Context
 import android.content.pm.PackageManager
-import android.hardware.Camera
+import android.graphics.Rect
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
-import android.widget.EditText
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.camera.core.AspectRatio
@@ -28,12 +31,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var previewView: PreviewView
     private lateinit var rectView: RectView
-    private lateinit var edit: EditText
+    private lateinit var male: RadioButton
+    private lateinit var female: RadioButton
     private lateinit var btn: AppCompatButton
     private lateinit var btn2: AppCompatButton
     private lateinit var ortEnvironment: OrtEnvironment //  OrtEnvironment 클래스의 인스턴스를 참조하기 위한 ortEnvironment 변수를 선언
     private lateinit var session: OrtSession    // OrtSession 클래스의 인스턴스를 참조하기 위한 session 변수를 선언
-    private val dataProcess = DataProcess(context = this)
+    private val detectProcess = DetectProcess(context = this)
 
     companion object {
         const val PERMISSION = 1    // 앱에서 권한 요청을 식별
@@ -49,7 +53,8 @@ class MainActivity : AppCompatActivity() {
 
         previewView = binding.preview
         rectView = binding.rectView
-        edit = binding.controlEdit
+        male = binding.controlMale
+        female = binding.controlFemale
         btn = binding.controlBtn1
         btn2 = binding.controlBtn2
 
@@ -70,14 +75,15 @@ class MainActivity : AppCompatActivity() {
 
         // 거리 계산 시작 버튼 클릭
         btn.setOnClickListener {
-            if (!edit.text.equals("")) {
+            if (male.isChecked) {
                 isDistance = true
-                realHeight = edit.text.toString().toDouble() // 센치 단위
-                Toast.makeText(this, "입력 완료!", Toast.LENGTH_SHORT).show()
-                // 거리 계산
+                realHeight = 23.8
+            } else if (female.isChecked) {
+                isDistance = true
+                realHeight = 22.2
             } else {
                 isDistance = false
-                Toast.makeText(this, "입력해 주세요", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "체크 해주세요", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -101,8 +107,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun load() {
-        dataProcess.loadModel() // onnx 모델 불러오기
-        dataProcess.loadLabel() // coco txt 파일 불러오기
+        detectProcess.loadModel() // onnx 모델 불러오기
+        detectProcess.loadLabel() // coco txt 파일 불러오기
 
         ortEnvironment = OrtEnvironment.getEnvironment()    // ONNX 런타임 환경을 초기화
         // ONNX 세션을 생성
@@ -110,29 +116,31 @@ class MainActivity : AppCompatActivity() {
         // 첫 번째 매개변수: 모델 파일의 경로를 지정
         // 두 번째 매개변수: 세션의 옵션을 설정
         session = ortEnvironment.createSession(
-            this.filesDir.absolutePath.toString() + "/" + DataProcess.FILE_NAME,
+            this.filesDir.absolutePath.toString() + "/" + DetectProcess.FILE_NAME,
             OrtSession.SessionOptions() // 기본 옵션 사용
         )
 
         // dataProcess.classes는 DataProcess 객체에서 클래스 label에 해당하는 데이터를 가져옴
         // 가져온 데이터를 rectView에 설정하여 객체 감지 결과에 대한 클래스 label 표시
-        rectView.setClassLabel(dataProcess.classes)
+        rectView.setClassLabel(detectProcess.classes)
     }
 
-    fun getCameraParams(): Array<Double> {
-        val camera = Camera.open() // 카메라 객체 생성
-        val parameters = camera.parameters  // 카메라 파라미터 가져오기
-        val focalLengthString = parameters.get("focal-length")
-        var focalLength = focalLengthString?.toDoubleOrNull() ?: 0.0 // 초점거리 (단위 밀리미터)
-        focalLength *= 10 // 밀리미터 -> 센치 단위로 변환
-        val sensorHeight = parameters.previewSize.height.toDouble() // (단위 픽셀)
-        val displayMetrics = resources.displayMetrics
-        val dpi = displayMetrics.densityDpi // DPI 값
+    private fun getCameraParams(): Array<Double> {
+        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager // 카메라 객채 생성
+        val cameraId = cameraManager.cameraIdList[0] // 원하는 카메라의 ID 선택
+        val characteristics = cameraManager.getCameraCharacteristics(cameraId) // 카메라 특성 가져오기
+        val sensorInfoActiveArraySize =
+            characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE) as Rect
+        val focalLengths =
+            characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS) as FloatArray
+
+        val focalLength = focalLengths[0].toDouble() // 초점 거리 (단위: 밀리미터)
+        val sensorHeight = sensorInfoActiveArraySize.height().toDouble() // 촬영 이미지 높이 (단위: 픽셀)
+        val dpi = resources.displayMetrics.densityDpi.toDouble() // DPI 값
         var pixelHeight = sensorHeight / dpi // 세로 크기를 인치 단위로 변환
         pixelHeight *= 2.54 // 세로 크기를 인치 -> 센치 단위로 변환
-        camera.release()
 
-        return arrayOf(focalLength, pixelHeight)
+        return arrayOf(focalLength * 10.0, pixelHeight)
     }
 
     // 카메라를 설정하고, 카메라 미리보기와 이미지 분석을 위한 객체를 생성
@@ -172,15 +180,15 @@ class MainActivity : AppCompatActivity() {
         // 시작 시간 기록
         val startTime = System.currentTimeMillis()
 
-        val bitmap = dataProcess.imageToBitmap(imageProxy)
-        val floatBuffer = dataProcess.bitmapToFloatBuffer(bitmap)
+        val bitmap = detectProcess.imageToBitmap(imageProxy)
+        val floatBuffer = detectProcess.bitmapToFloatBuffer(bitmap)
         val inputName = session.inputNames.iterator().next() // session 이름
         //모델의 요구 입력값 [1 3 640 640] [배치 사이즈, 픽셀(RGB), 너비, 높이], 모델마다 크기는 다를 수 있음.
         val shape = longArrayOf(
-            DataProcess.BATCH_SIZE.toLong(),
-            DataProcess.PIXEL_SIZE.toLong(),
-            DataProcess.INPUT_SIZE.toLong(),
-            DataProcess.INPUT_SIZE.toLong()
+            DetectProcess.BATCH_SIZE.toLong(),
+            DetectProcess.PIXEL_SIZE.toLong(),
+            DetectProcess.INPUT_SIZE.toLong(),
+            DetectProcess.INPUT_SIZE.toLong()
         )
         // 객체를 사용하여 모델을 실행하고, 결과 텐서를 받아옴
         val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
@@ -189,7 +197,7 @@ class MainActivity : AppCompatActivity() {
         // [1 84 8400] = [배치 사이즈, 라벨링 개수, 좌표값]
         val outputs = resultTensor.get(0).value as Array<*>
         // 출력을 객체 감지 결과로 변환
-        val results = dataProcess.outputsToNPMSPredictions(outputs)
+        val results = detectProcess.outputsToNPMSPredictions(outputs)
 
         //화면 표출
         rectView.transformRect(results) // results를 사용하여 rectView에 객체 감지 결과를 전달하여 사각형으로 표시할 위치와 정보를 변환

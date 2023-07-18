@@ -16,32 +16,29 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
 
     private var results: ArrayList<Result>? = null
     private lateinit var classes: Array<String>
-    private val detectObject = "person"
 
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         //그림 그리기
         results?.forEach {
-            if (classes[it.classIndex] == detectObject) {
-                canvas.drawRect(it.coordinate, findPaint(it.section))
-                val textInfo =
-                    if (isDistance) it.distance.toString() + "m"
-                    else classes[it.classIndex]
-                canvas.drawRect(
-                    it.coordinate.left,
-                    it.coordinate.top,
-                    it.coordinate.left + textPaint.measureText(textInfo),
-                    it.coordinate.top + textPaint.textSize,
-                    findPaintFill(it.section)
-                )
-                canvas.drawText(
-                    textInfo,
-                    it.coordinate.left,
-                    it.coordinate.top + 40,
-                    textPaint,
-                )
-            }
+            canvas.drawRect(it.coordinate, findPaint(it.section))
+            val textInfo =
+                if (isDistance) it.distance.toString() + "m"
+                else classes[it.classIndex]
+            canvas.drawRect(
+                it.coordinate.left,
+                it.coordinate.top,
+                it.coordinate.left + textPaint.measureText(textInfo),
+                it.coordinate.top + textPaint.textSize,
+                findPaintFill(it.section)
+            )
+            canvas.drawText(
+                textInfo,
+                it.coordinate.left,
+                it.coordinate.top + 40,
+                textPaint,
+            )
         }
     }
 
@@ -57,24 +54,22 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
     // 가로 화면 기준
     fun transformRect(results: ArrayList<Result>) {
         // scale 구하기
-        val scaleX = width / DataProcess.INPUT_SIZE.toFloat()
+        val scaleX = width / DetectProcess.INPUT_SIZE.toFloat()
         val scaleY = scaleX * 9f / 16f
         val realY = width * 9f / 16f
         val diffY = realY - height
 
         // 촬영 사진과 앱 내 보이는 뷰 사이즈 조정
         results.forEach {
-            if (classes[it.classIndex] == detectObject) {
-                it.coordinate.left *= scaleX
-                it.coordinate.right *= scaleX
-                it.coordinate.top = it.coordinate.top * scaleY - (diffY / 2f)
-                it.coordinate.bottom = it.coordinate.bottom * scaleY - (diffY / 2f)
-                it.section = findSection(it.coordinate.centerX(), it.coordinate.centerY())
-                it.distance = if (isDistance) calculateDistance(
-                    info[0],
-                    it.coordinate.height() * info[1]
-                ) else 0.0
-            }
+            it.coordinate.left *= scaleX
+            it.coordinate.right *= scaleX
+            it.coordinate.top = it.coordinate.top * scaleY - (diffY / 2f)
+            it.coordinate.bottom = it.coordinate.bottom * scaleY - (diffY / 2f)
+            it.section = findSection(it.coordinate.centerX(), it.coordinate.centerY())
+            it.distance = if (isDistance) calculateDistance(
+                info[0],
+                it.coordinate.height() * info[1]
+            ) else 0.0
         }
         this.results = results
     }

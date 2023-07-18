@@ -58,49 +58,46 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="대상자 키: "
+            android:text="성별"
             android:textColor="@color/black"
             android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/control_edit"
+            app:layout_constraintEnd_toStartOf="@id/control_radio"
             app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintHorizontal_weight="0.3"
+            app:layout_constraintHorizontal_weight="0.4"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-            android:id="@+id/control_edit"
+        <RadioGroup
+            android:id="@+id/control_radio"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="160"
-            android:importantForAutofill="no"
-            android:inputType="number"
-            android:maxLength="3"
-            android:minWidth="100dp"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/control_tv2"
-            app:layout_constraintHorizontal_weight="0.4"
-            app:layout_constraintStart_toEndOf="@id/control_tv1"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/control_tv2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="50dp"
-            android:text="cm"
-            android:textColor="@color/black"
-            android:textSize="15sp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/control_btn1"
-            app:layout_constraintHorizontal_weight="0.4"
-            app:layout_constraintStart_toEndOf="@id/control_edit"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintHorizontal_weight="0.8"
+            app:layout_constraintStart_toEndOf="@id/control_tv1"
+            app:layout_constraintTop_toTopOf="parent">
 
+            <RadioButton
+                android:id="@+id/control_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="남자"
+                android:textAlignment="center"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/control_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="여자"
+                android:textAlignment="center"
+                android:textColor="@color/black" />
+        </RadioGroup>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/control_btn1"
@@ -115,7 +112,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/control_btn2"
             app:layout_constraintHorizontal_weight="0.2"
-            app:layout_constraintStart_toEndOf="@id/control_tv2"
+            app:layout_constraintStart_toEndOf="@id/control_radio"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
