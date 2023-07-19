@@ -5,15 +5,13 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Rect
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.RadioButton
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -27,17 +25,20 @@ import java.util.Collections
 import java.util.concurrent.Executors
 import kotlin.math.roundToLong
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var previewView: PreviewView
     private lateinit var rectView: RectView
     private lateinit var male: RadioButton
     private lateinit var female: RadioButton
-    private lateinit var btn: AppCompatButton
-    private lateinit var btn2: AppCompatButton
-    private lateinit var ortEnvironment: OrtEnvironment //  OrtEnvironment 클래스의 인스턴스를 참조하기 위한 ortEnvironment 변수를 선언
-    private lateinit var session: OrtSession    // OrtSession 클래스의 인스턴스를 참조하기 위한 session 변수를 선언
+    private lateinit var nonDivision: RadioButton
+    private lateinit var yoloOrtEnvironment: OrtEnvironment //  OrtEnvironment 클래스의 인스턴스를 참조하기 위한 ortEnvironment 변수를 선언
+    private lateinit var yoloSession: OrtSession    // OrtSession 클래스의 인스턴스를 참조하기 위한 session 변수를 선언
+    private lateinit var classifyOrtEnvironment: OrtEnvironment
+    private lateinit var classifySession: OrtSession
     private val detectProcess = DetectProcess(context = this)
+    private val classProcess = ClassificationProcess(context = this)
 
     companion object {
         const val PERMISSION = 1    // 앱에서 권한 요청을 식별
@@ -45,6 +46,8 @@ class MainActivity : AppCompatActivity() {
         var realHeight = 0.0
         var isDistance = false
     }
+
+    private val isClassify = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -55,8 +58,7 @@ class MainActivity : AppCompatActivity() {
         rectView = binding.rectView
         male = binding.controlMale
         female = binding.controlFemale
-        btn = binding.controlBtn1
-        btn2 = binding.controlBtn2
+        nonDivision = binding.controlAverage
 
         // 자동 꺼짐 해제
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -65,7 +67,9 @@ class MainActivity : AppCompatActivity() {
         setPermissions()
 
         // onnx 파일 && txt 파일 불러오기
-        load()
+        yoloLoad()
+        if (isClassify)
+            classifyLoad()
 
         // 카메라 정보 갖고오기
         info = getCameraParams()
@@ -73,24 +77,19 @@ class MainActivity : AppCompatActivity() {
         // 카메라 켜기
         setCamera()
 
-        // 거리 계산 시작 버튼 클릭
-        btn.setOnClickListener {
-            if (male.isChecked) {
-                isDistance = true
-                realHeight = 23.8
-            } else if (female.isChecked) {
-                isDistance = true
-                realHeight = 22.2
-            } else {
-                isDistance = false
-                Toast.makeText(this, "체크 해주세요", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // 거리 계산 종료 버튼 클릭
-        btn2.setOnClickListener {
+        // 라다오 버튼 default
+        if (male.isChecked) {
+            isDistance = true
+            realHeight = 24.6
+        } else if (female.isChecked) {
+            isDistance = true
+            realHeight = 23.7
+        } else if (nonDivision.isChecked) {
+            isDistance = true
+            realHeight = 24.1
+        } else {
             isDistance = false
-            Toast.makeText(this, "거리 계산을 종료합니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "체크 해주세요", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -106,16 +105,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun load() {
+    private fun yoloLoad() {
         detectProcess.loadModel() // onnx 모델 불러오기
         detectProcess.loadLabel() // coco txt 파일 불러오기
 
-        ortEnvironment = OrtEnvironment.getEnvironment()    // ONNX 런타임 환경을 초기화
+        yoloOrtEnvironment = OrtEnvironment.getEnvironment()    // ONNX 런타임 환경을 초기화
         // ONNX 세션을 생성
         // ortEnvironment.createSession() 메서드를 호출하여 세션을 생성
         // 첫 번째 매개변수: 모델 파일의 경로를 지정
         // 두 번째 매개변수: 세션의 옵션을 설정
-        session = ortEnvironment.createSession(
+        yoloSession = yoloOrtEnvironment.createSession(
             this.filesDir.absolutePath.toString() + "/" + DetectProcess.FILE_NAME,
             OrtSession.SessionOptions() // 기본 옵션 사용
         )
@@ -125,21 +124,37 @@ class MainActivity : AppCompatActivity() {
         rectView.setClassLabel(detectProcess.classes)
     }
 
+    private fun classifyLoad() {
+        classProcess.loadModel() // onnx 모델 불러오기
+        classProcess.loadLabel() // coco txt 파일 불러오기
+
+        classifyOrtEnvironment = OrtEnvironment.getEnvironment()    // ONNX 런타임 환경을 초기화
+        // ONNX 세션을 생성
+        // ortEnvironment.createSession() 메서드를 호출하여 세션을 생성
+        // 첫 번째 매개변수: 모델 파일의 경로를 지정
+        // 두 번째 매개변수: 세션의 옵션을 설정
+        classifySession = classifyOrtEnvironment.createSession(
+            this.filesDir.absolutePath.toString() + "/" + ClassificationProcess.FILE_NAME,
+            OrtSession.SessionOptions() // 기본 옵션 사용
+        )
+
+        // dataProcess.classes는 DataProcess 객체에서 클래스 label에 해당하는 데이터를 가져옴
+        // 가져온 데이터를 rectView에 설정하여 객체 감지 결과에 대한 클래스 label 표시
+        rectView.setClassLabel(classProcess.classifyClasses)
+    }
+
     private fun getCameraParams(): Array<Double> {
         val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager // 카메라 객채 생성
         val cameraId = cameraManager.cameraIdList[0] // 원하는 카메라의 ID 선택
         val characteristics = cameraManager.getCameraCharacteristics(cameraId) // 카메라 특성 가져오기
-        val sensorInfoActiveArraySize =
-            characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE) as Rect
         val focalLengths =
             characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS) as FloatArray
 
         val focalLength = focalLengths[0].toDouble() // 초점 거리 (단위: 밀리미터)
-        val sensorHeight = sensorInfoActiveArraySize.height().toDouble() // 촬영 이미지 높이 (단위: 픽셀)
+        val previewHeight = resources.displayMetrics.heightPixels // 화면 디스플레이 높이 (단위: 픽셀)
         val dpi = resources.displayMetrics.densityDpi.toDouble() // DPI 값
-        var pixelHeight = sensorHeight / dpi // 세로 크기를 인치 단위로 변환
-        pixelHeight *= 2.54 // 세로 크기를 인치 -> 센치 단위로 변환
-
+        var pixelHeight = previewHeight / dpi // 세로 크기를 인치 단위로 변환
+        pixelHeight *= 2.54 // 세로 크기를 인치 -> 센치 단위로 변환 => 디스플레이 픽셀 1개의 실제 사이즈
         return arrayOf(focalLength * 10.0, pixelHeight)
     }
 
@@ -151,19 +166,24 @@ class MainActivity : AppCompatActivity() {
         // 이미지 비율은 유지, 일부 부분은 잘림
         previewView.scaleType = PreviewView.ScaleType.FILL_CENTER
 
-        // 전면 카메라
-        val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+        // 후면 카메라
+        val cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
 
         // 16:9 화면으로 받아옴
-        val preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9).build()
+        val preview = Preview.Builder()
+            .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+            .build()
 
         // preview 에서 받아와서 previewView 출력
         preview.setSurfaceProvider(previewView.surfaceProvider)
 
         //분석 중이면 그 다음 화면이 대기중인 것이 아니라 계속 받아오는 화면으로 새로고침 함. 분석이 끝나면 그 최신 사진을 다시 분석
-        val analysis = ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9)
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
+        val analysis = ImageAnalysis.Builder()
+            .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
 
         // ImageAnalysis 객체에 대한 설정
         // executor: 분석 작업을 처리하기 위한 스레드 풀
@@ -182,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
         val bitmap = detectProcess.imageToBitmap(imageProxy)
         val floatBuffer = detectProcess.bitmapToFloatBuffer(bitmap)
-        val inputName = session.inputNames.iterator().next() // session 이름
+        val inputName = yoloSession.inputNames.iterator().next() // session 이름
         //모델의 요구 입력값 [1 3 640 640] [배치 사이즈, 픽셀(RGB), 너비, 높이], 모델마다 크기는 다를 수 있음.
         val shape = longArrayOf(
             DetectProcess.BATCH_SIZE.toLong(),
@@ -191,13 +211,53 @@ class MainActivity : AppCompatActivity() {
             DetectProcess.INPUT_SIZE.toLong()
         )
         // 객체를 사용하여 모델을 실행하고, 결과 텐서를 받아옴
-        val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
+        val inputTensor = OnnxTensor.createTensor(yoloOrtEnvironment, floatBuffer, shape)
         // 입력 이름과 입력 텐서를 mapping하여 모델에 전달
-        val resultTensor = session.run(Collections.singletonMap(inputName, inputTensor))
+        val resultTensor = yoloSession.run(Collections.singletonMap(inputName, inputTensor))
         // [1 84 8400] = [배치 사이즈, 라벨링 개수, 좌표값]
         val outputs = resultTensor.get(0).value as Array<*>
         // 출력을 객체 감지 결과로 변환
         val results = detectProcess.outputsToNPMSPredictions(outputs)
+
+        if (isClassify) {
+            // Classification model 적용
+            results.forEach {
+                val cropBitmap = classProcess.cropFaceToBitmap(
+                    imageProxy,
+                    it.coordinate,
+                    DetectProcess.INPUT_SIZE
+                )
+                val classifyFloatBuffer = classProcess.bitmapToFloatBuffer(cropBitmap)
+                val classifyName = classifySession.inputNames.iterator().next() // session 이름
+
+                //모델의 요구 입력값 [1 3 224 224] [배치 사이즈, 픽셀(RGB), 너비, 높이], 모델마다 크기는 다를 수 있음.
+                val classifyShape = longArrayOf(
+                    ClassificationProcess.BATCH_SIZE.toLong(),
+                    ClassificationProcess.PIXEL_SIZE.toLong(),
+                    ClassificationProcess.INPUT_SIZE.toLong(),
+                    ClassificationProcess.INPUT_SIZE.toLong()
+                )
+
+                // 객체를 사용하여 모델을 실행하고, 결과 텐서를 받아옴
+                val classifyTensor =
+                    OnnxTensor.createTensor(
+                        classifyOrtEnvironment,
+                        classifyFloatBuffer,
+                        classifyShape
+                    )
+                // 입력 이름과 입력 텐서를 mapping하여 모델에 전달
+                val classifyResultTensor = classifySession.run(
+                    Collections.singletonMap(
+                        classifyName,
+                        classifyTensor
+                    )
+                )
+                // [1 2] = [배치 사이즈, 라벨링 개수]
+                val classifyOutputs = classifyResultTensor.get(0).value as Array<*>
+
+                it.classIndex = classProcess.outputTypeClassification(classifyOutputs)
+            }
+        }
 
         //화면 표출
         rectView.transformRect(results) // results를 사용하여 rectView에 객체 감지 결과를 전달하여 사각형으로 표시할 위치와 정보를 변환
@@ -214,7 +274,7 @@ class MainActivity : AppCompatActivity() {
 
         // FPS를 메인 스레드에서 TextView에 업데이트
         runOnUiThread {
-            binding.fpsTv.text = "FPS: ${fps}"
+            binding.fpsTv.text = "FPS: $fps"
         }
     }
 }
