@@ -35,10 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nonDivision: RadioButton
     private lateinit var yoloOrtEnvironment: OrtEnvironment //  OrtEnvironment 클래스의 인스턴스를 참조하기 위한 ortEnvironment 변수를 선언
     private lateinit var yoloSession: OrtSession    // OrtSession 클래스의 인스턴스를 참조하기 위한 session 변수를 선언
-    private lateinit var classifyOrtEnvironment: OrtEnvironment
-    private lateinit var classifySession: OrtSession
     private val detectProcess = DetectProcess(context = this)
-    private val classProcess = ClassificationProcess(context = this)
 
     companion object {
         const val PERMISSION = 1    // 앱에서 권한 요청을 식별
@@ -46,8 +43,6 @@ class MainActivity : AppCompatActivity() {
         var realHeight = 0.0
         var isDistance = false
     }
-
-    private val isClassify = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -68,8 +63,6 @@ class MainActivity : AppCompatActivity() {
 
         // onnx 파일 && txt 파일 불러오기
         yoloLoad()
-        if (isClassify)
-            classifyLoad()
 
         // 카메라 정보 갖고오기
         info = getCameraParams()
@@ -122,25 +115,6 @@ class MainActivity : AppCompatActivity() {
         // dataProcess.classes는 DataProcess 객체에서 클래스 label에 해당하는 데이터를 가져옴
         // 가져온 데이터를 rectView에 설정하여 객체 감지 결과에 대한 클래스 label 표시
         rectView.setClassLabel(detectProcess.classes)
-    }
-
-    private fun classifyLoad() {
-        classProcess.loadModel() // onnx 모델 불러오기
-        classProcess.loadLabel() // coco txt 파일 불러오기
-
-        classifyOrtEnvironment = OrtEnvironment.getEnvironment()    // ONNX 런타임 환경을 초기화
-        // ONNX 세션을 생성
-        // ortEnvironment.createSession() 메서드를 호출하여 세션을 생성
-        // 첫 번째 매개변수: 모델 파일의 경로를 지정
-        // 두 번째 매개변수: 세션의 옵션을 설정
-        classifySession = classifyOrtEnvironment.createSession(
-            this.filesDir.absolutePath.toString() + "/" + ClassificationProcess.FILE_NAME,
-            OrtSession.SessionOptions() // 기본 옵션 사용
-        )
-
-        // dataProcess.classes는 DataProcess 객체에서 클래스 label에 해당하는 데이터를 가져옴
-        // 가져온 데이터를 rectView에 설정하여 객체 감지 결과에 대한 클래스 label 표시
-        rectView.setClassLabel(classProcess.classifyClasses)
     }
 
     private fun getCameraParams(): Array<Double> {
@@ -218,46 +192,6 @@ class MainActivity : AppCompatActivity() {
         val outputs = resultTensor.get(0).value as Array<*>
         // 출력을 객체 감지 결과로 변환
         val results = detectProcess.outputsToNPMSPredictions(outputs)
-
-        if (isClassify) {
-            // Classification model 적용
-            results.forEach {
-                val cropBitmap = classProcess.cropFaceToBitmap(
-                    imageProxy,
-                    it.coordinate,
-                    DetectProcess.INPUT_SIZE
-                )
-                val classifyFloatBuffer = classProcess.bitmapToFloatBuffer(cropBitmap)
-                val classifyName = classifySession.inputNames.iterator().next() // session 이름
-
-                //모델의 요구 입력값 [1 3 224 224] [배치 사이즈, 픽셀(RGB), 너비, 높이], 모델마다 크기는 다를 수 있음.
-                val classifyShape = longArrayOf(
-                    ClassificationProcess.BATCH_SIZE.toLong(),
-                    ClassificationProcess.PIXEL_SIZE.toLong(),
-                    ClassificationProcess.INPUT_SIZE.toLong(),
-                    ClassificationProcess.INPUT_SIZE.toLong()
-                )
-
-                // 객체를 사용하여 모델을 실행하고, 결과 텐서를 받아옴
-                val classifyTensor =
-                    OnnxTensor.createTensor(
-                        classifyOrtEnvironment,
-                        classifyFloatBuffer,
-                        classifyShape
-                    )
-                // 입력 이름과 입력 텐서를 mapping하여 모델에 전달
-                val classifyResultTensor = classifySession.run(
-                    Collections.singletonMap(
-                        classifyName,
-                        classifyTensor
-                    )
-                )
-                // [1 2] = [배치 사이즈, 라벨링 개수]
-                val classifyOutputs = classifyResultTensor.get(0).value as Array<*>
-
-                it.classIndex = classProcess.outputTypeClassification(classifyOutputs)
-            }
-        }
 
         //화면 표출
         rectView.transformRect(results) // results를 사용하여 rectView에 객체 감지 결과를 전달하여 사각형으로 표시할 위치와 정보를 변환
