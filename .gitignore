@@ -15,5 +15,3 @@
 local.properties
 /app/src/main/assets/yolov8n-face.onnx
 /app/src/main/assets/face.txt
-/app/src/main/assets/gender-classification-2.onnx
-/app/src/main/assets/gender.txt

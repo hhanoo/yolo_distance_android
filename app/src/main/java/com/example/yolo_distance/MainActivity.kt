@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         const val PERMISSION = 1    // 앱에서 권한 요청을 식별
         lateinit var info: Array<Double>
         var realHeight = 0.0
-        var isDistance = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,17 +71,11 @@ class MainActivity : AppCompatActivity() {
 
         // 라다오 버튼 default
         if (male.isChecked) {
-            isDistance = true
             realHeight = 24.6
         } else if (female.isChecked) {
-            isDistance = true
             realHeight = 23.7
         } else if (nonDivision.isChecked) {
-            isDistance = true
             realHeight = 24.1
-        } else {
-            isDistance = false
-            Toast.makeText(this, "체크 해주세요", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -125,11 +118,9 @@ class MainActivity : AppCompatActivity() {
             characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS) as FloatArray
 
         val focalLength = focalLengths[0].toDouble() // 초점 거리 (단위: 밀리미터)
-        val previewHeight = resources.displayMetrics.heightPixels // 화면 디스플레이 높이 (단위: 픽셀)
         val dpi = resources.displayMetrics.densityDpi.toDouble() // DPI 값
-        var pixelHeight = previewHeight / dpi // 세로 크기를 인치 단위로 변환
-        pixelHeight *= 2.54 // 세로 크기를 인치 -> 센치 단위로 변환 => 디스플레이 픽셀 1개의 실제 사이즈
-        return arrayOf(focalLength * 10.0, pixelHeight)
+        val pixelHeight = 2.54 / dpi // 픽셀 1개의 실제 사이즈
+        return arrayOf(focalLength, pixelHeight)
     }
 
     // 카메라를 설정하고, 카메라 미리보기와 이미지 분석을 위한 객체를 생성

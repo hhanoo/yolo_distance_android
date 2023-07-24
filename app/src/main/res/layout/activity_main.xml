@@ -73,6 +73,9 @@
             android:id="@+id/control_radio"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="50dp"
+            android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -81,31 +84,28 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <RadioButton
+                android:id="@+id/control_average"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:checked="true"
+                android:text="구분 X"
+                android:textColor="@color/black" />
+
+            <RadioButton
                 android:id="@+id/control_male"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
                 android:text="남자"
-                android:textAlignment="center"
                 android:textColor="@color/black" />
 
             <RadioButton
                 android:id="@+id/control_female"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
                 android:text="여자"
-                android:textAlignment="center"
-                android:textColor="@color/black" />
-
-            <RadioButton
-                android:id="@+id/control_average"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:text="구분 X"
-                android:textAlignment="center"
                 android:textColor="@color/black" />
         </RadioGroup>
 

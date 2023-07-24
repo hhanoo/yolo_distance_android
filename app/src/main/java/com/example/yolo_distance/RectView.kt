@@ -8,7 +8,6 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.yolo_distance.MainActivity.Companion.info
-import com.example.yolo_distance.MainActivity.Companion.isDistance
 import com.example.yolo_distance.MainActivity.Companion.realHeight
 import kotlin.math.round
 
@@ -24,8 +23,7 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
         results?.forEach {
             canvas.drawRect(it.coordinate, findPaint(it.section))
             val textInfo =
-                if (isDistance) it.distance.toString() + "m"
-                else classes[it.classIndex]
+                it.distance.toString() + "m"
             canvas.drawRect(
                 it.coordinate.left,
                 it.coordinate.top,
@@ -66,10 +64,10 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
             it.coordinate.top = it.coordinate.top * scaleY - (diffY / 2f)
             it.coordinate.bottom = it.coordinate.bottom * scaleY - (diffY / 2f)
             it.section = findSection(it.coordinate.centerX(), it.coordinate.centerY())
-            it.distance = if (isDistance) calculateDistance(
+            it.distance = calculateDistance(
                 info[0],
                 it.coordinate.height() * info[1]
-            ) else 0.0
+            )
         }
         this.results = results
     }
@@ -99,7 +97,7 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
     // 거리 계산하기
     private fun calculateDistance(focalLength: Double, detectHeight: Double): Double {
         // 피사계의 식: Distance = (objectHeight * FocalLength) / 화면 상 높이
-        return round((realHeight * focalLength) / detectHeight * 10) / 10
+        return round((realHeight * focalLength) / detectHeight / 10) / 10
     }
 
     // 랜덤 색 지정
