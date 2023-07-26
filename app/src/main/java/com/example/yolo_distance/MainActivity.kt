@@ -8,9 +8,9 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import android.widget.RadioButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var yoloOrtEnvironment: OrtEnvironment //  OrtEnvironment 클래스의 인스턴스를 참조하기 위한 ortEnvironment 변수를 선언
     private lateinit var yoloSession: OrtSession    // OrtSession 클래스의 인스턴스를 참조하기 위한 session 변수를 선언
     private val detectProcess = DetectProcess(context = this)
-
     companion object {
         const val PERMISSION = 1    // 앱에서 권한 요청을 식별
         lateinit var info: Array<Double>
@@ -56,6 +55,9 @@ class MainActivity : AppCompatActivity() {
 
         // 자동 꺼짐 해제
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        // UWB 사용 여부
+        setUWB()
 
         // 권한 허용
         setPermissions()
@@ -201,5 +203,14 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             binding.fpsTv.text = "FPS: $fps"
         }
+    }
+
+    private fun setUWB() {
+        val packageManager: PackageManager = applicationContext.packageManager
+        val deviceSupportsUwb = packageManager.hasSystemFeature("android.hardware.uwb")
+        if (deviceSupportsUwb)
+            Log.e("TEST", "Available")
+        else
+            Log.e("TEST", "Not available")
     }
 }
