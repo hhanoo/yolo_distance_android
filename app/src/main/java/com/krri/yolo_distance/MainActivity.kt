@@ -1,4 +1,4 @@
-package com.example.yolo_distance
+package com.krri.yolo_distance
 
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
@@ -20,7 +20,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
-import com.example.yolo_distance.databinding.ActivityMainBinding
+import com.krri.yolo_distance.databinding.ActivityMainBinding
 import java.util.Collections
 import java.util.concurrent.Executors
 import kotlin.math.roundToLong

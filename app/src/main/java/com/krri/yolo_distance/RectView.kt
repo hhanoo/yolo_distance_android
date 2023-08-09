@@ -1,4 +1,4 @@
-package com.example.yolo_distance
+package com.krri.yolo_distance
 
 import android.content.Context
 import android.graphics.Canvas
@@ -7,8 +7,8 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import com.example.yolo_distance.MainActivity.Companion.info
-import com.example.yolo_distance.MainActivity.Companion.realHeight
+import com.krri.yolo_distance.MainActivity.Companion.info
+import com.krri.yolo_distance.MainActivity.Companion.realHeight
 import kotlin.math.round
 
 class RectView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {

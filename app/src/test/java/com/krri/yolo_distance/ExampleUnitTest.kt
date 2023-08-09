@@ -1,4 +1,4 @@
-package com.example.yolo_distance
+package com.krri.yolo_distance
 
 import org.junit.Test
 

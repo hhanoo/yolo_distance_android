@@ -1,4 +1,4 @@
-package com.example.yolo_distance
+package com.krri.yolo_distance
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

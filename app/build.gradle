@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.yolo_distance'
+    namespace 'com.krri.yolo_distance'
     compileSdk 34
 
     buildFeatures {
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.yolo_distance"
+        applicationId "com.krri.yolo_distance"
         minSdk 24
         targetSdk 34
         versionCode 1

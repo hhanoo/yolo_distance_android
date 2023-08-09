@@ -1,9 +1,8 @@
-package com.example.yolo_distance
+package com.krri.yolo_distance
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.util.Log
 import androidx.camera.core.ImageProxy
 import java.io.BufferedReader
 import java.io.File

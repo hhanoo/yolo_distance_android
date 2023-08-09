@@ -19,7 +19,7 @@
 
     </androidx.camera.view.PreviewView>
 
-    <com.example.yolo_distance.RectView
+    <com.krri.yolo_distance.RectView
         android:id="@+id/rectView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -30,7 +30,7 @@
         app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintVertical_weight="0.9" />
 
-    <com.example.yolo_distance.DividedAreaView
+    <com.krri.yolo_distance.DividedAreaView
         android:id="@+id/divideAreaView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
