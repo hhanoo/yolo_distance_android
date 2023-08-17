@@ -64,9 +64,11 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
             it.coordinate.top = it.coordinate.top * scaleY - (diffY / 2f)
             it.coordinate.bottom = it.coordinate.bottom * scaleY - (diffY / 2f)
             it.section = findSection(it.coordinate.centerX(), it.coordinate.centerY())
-            it.distance = calculateDistance(
-                info[0],
-                it.coordinate.height() * info[1]
+            it.distance = calibration(
+                calculateDistance(
+                    info[0],
+                    it.coordinate.height() * info[1]
+                ), it.section
             )
         }
         this.results = results
@@ -98,6 +100,26 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
     private fun calculateDistance(focalLength: Double, detectHeight: Double): Double {
         // 피사계의 식: Distance = (objectHeight * FocalLength) / 화면 상 높이
         return round((realHeight * focalLength) / detectHeight / 10) / 10
+    }
+
+    // 거리 보정
+    private fun calibration(length: Double, section: Int): Double {
+        // y = 1.17x - 0.38
+        var calibrationDistance = (length + 0.38) / 1.17
+        when (section) {
+            1, 3, 7, 9 -> {
+                calibrationDistance += 0.2
+            }
+
+            2, 4, 6, 8 -> {
+                calibrationDistance += 0.05
+            }
+
+            else -> {
+
+            }
+        }
+        return round(calibrationDistance * 10) / 10
     }
 
     // 랜덤 색 지정
