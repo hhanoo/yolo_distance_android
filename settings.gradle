@@ -10,6 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url "https://estimote.jfrog.io/artifactory/android-proximity-sdk"
+        }
     }
 }
 rootProject.name = "YOLO_distance"
