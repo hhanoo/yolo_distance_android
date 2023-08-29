@@ -13,5 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/src/main/assets/yolov8n-face.onnx
-/app/src/main/assets/face.txt
